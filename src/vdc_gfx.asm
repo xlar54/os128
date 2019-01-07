@@ -150,8 +150,9 @@ next:
     tay
     iny
     lda vdc_xlo
-    sec
-    adc #$08
+    clc
+    adc fwidth
+    adc #$01
     sta vdc_xlo
     jmp next
 done:
@@ -650,6 +651,7 @@ fskip1:
 
     ldy #$00        ; get the value of the 1st font byte
     lda (fcharlo),y
+    sta fwidth
     sta ftwidth     ; store it in the width counter
                     ; get the height byte and store as a counter
     clc             

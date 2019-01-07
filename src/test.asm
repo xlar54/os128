@@ -11,7 +11,7 @@
 
 main:
     #HiresOn
-    #SetColors VDC_COLOR_LGREY, VDC_COLOR_BLACK
+    #SetColors VDC_COLOR_BLACK, VDC_COLOR_LGREY 
     #MoveTo 0,0
     #DrawTo 639, 0
     #DrawTo 639, 199
@@ -22,10 +22,11 @@ main:
 
     #SetPixel 120,120
 
-    #PutString 0,100,stuff
+    #PutString 30,25,stuff
 
     jsr keyboard_getkey
 
+    #SetColors VDC_COLOR_LGREY, VDC_COLOR_BLACK  
     #HiresOff
     
     rts
