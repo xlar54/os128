@@ -6,4 +6,8 @@ assembly language library.  Long way to go!  Your
 suggestions, comments, and pull requests are always
 welcome!
 
+Current features:
+* Proportional VDC font
+* VDC line and box drawing macros
+
 ![Screenshot](https://i.imgur.com/vcZgypk.png)
