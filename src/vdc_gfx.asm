@@ -141,10 +141,7 @@ next:
     tya
     pha
     lda \txtPtr, y
-    cmp #$00
     beq done
-    ldx vdc_xlo
-    ldy vdc_y
     jsr putchar
     pla
     tay
@@ -152,24 +149,21 @@ next:
     lda vdc_xlo
     clc
     adc fwidth
+    bcc skip
+    inc vdc_xhi
+skip:
+    sta vdc_xlo
+    clc
     adc #$01
+    bcc skip2
+    inc vdc_xhi
+skip2:
     sta vdc_xlo
     jmp next
 done:
     pla
 .endm
 
-;*=$1300
-
-;jmp drawlin   ;jmp to draw line/position pixel cursor
-;jmp gohires   ;jmp to enter hires mode
-;jmp endhires  ;jmp to exit hires mode
-;jmp rsrvd     ;reserved
-;jmp rsrvd     ;reserved
-
-;!byte $b3     ;library loaded identifier
-;rsrvd:
-;rts
 
 ;*****************************************************************************
 ;*  write VDC register
@@ -628,70 +622,79 @@ bye:    lda $04       ;exit - set the pixel cursor position to the
         ldy $08
         jmp back
 
-
+;*****************************************************************************
+;*  put character at x/y coord                                               *
+;*****************************************************************************
 putchar:
-    stx tmpxl       ; put the x location in two temp locations
-    stx otmpxl
-    sty tmpy        ; put the y location in two temp locations
-    sty otmpy
+    ldx vdc_xlo         ; copy the x lo location in temp location
+    stx vdc_txlo
+    ldx vdc_xhi         ; copy the x hi location in temp location
+    stx vdc_txhi
+    ldy vdc_y           ; put the y location in temp location
+    sty vdc_ty
     
-    cmp #$80        ; fix uppercase to align with font data table (if > 128, subtract 96)
-    blt fskip1      ; so ASCII 'A' (193) becomes 'A' (97)
+    cmp #$80            ; fix uppercase to align with font data table (if > 128, subtract 96)
+    blt font_normalize  ; so ASCII 'A' (193) becomes 'A' (97)
     sec
     sbc #$60
-fskip1:
+font_normalize:
     sec
-    sbc #$20        ; subtract 32 from the character to normalize against the font data
-    sta fchar       ; store the character
+    sbc #$20            ; subtract 32 from the character to normalize against the font data
+    sta font_char       ; store the character
 
-    jsr fcalcchar   ; calculate the base address of the character to display
-                    ; fcharlo and fcharhi will contain the base address of the font data for char
+    jsr fcalcchar       ; calculate the base address of the character to display
+                        ; fcharlo and fcharhi will contain the base address of the font data for char
 
-    ; get the first three font bytes and store them as counters
-
-    ldy #$00        ; get the value of the 1st font byte
+    ; get the 1st (width) byte and store as a counter
+f1stbyte:
+    ldy #$00        
     lda (fcharlo),y
-    sta fwidth
+    sta fwidth      ; store the width
     sta ftwidth     ; store it in the width counter
-                    ; get the height byte and store as a counter
+    
+    ; move to next byte
     clc             
-    lda fcharlo     ; get lo byte address
+    lda fcharlo     ; get lo byte address           - try just "inc fcharlo"
     adc #$01        ; add one
     sta fcharlo     ; store it back
-    bcc fcont1      ; if carry..
+    bcc f2ndbyte    ; if carry..
     inc fcharhi     ; increase hi byte
-fcont1:
-    ldy #$00        ; get the value of the 2nd font byte
+    
+    ; get the 2nd (height) byte and store as a counter
+f2ndbyte:
+    ldy #$00        
     lda (fcharlo),y
     sta ftheight    ; store it in the height counter
 
-                    ; get the base byte and store as a counter
+    ; move to next byte
     clc
     lda fcharlo     ; get lo byte address
     adc #$01        ; add one
     sta fcharlo     ; store it back       
-    bcc fcont2      ; if carry..
+    bcc f3rdbyte    ; if carry..
     inc fcharhi     ; increase hi byte
-fcont2:
-    ldy #$00        ; get the value of the 3rd font byte
+    
+    ; get the 3rd (base) byte and store as a counter
+f3rdbyte:
+    ldy #$00        
     lda (fcharlo),y
-    sta fbase       ; store it in the base counter
+    sta fbase
 
-    ; fcharlo / fcharhi are now pointing to the 3rd byte
+    ; fcharlo / fcharhi are now pointing to the 4th byte (actual font data)
 
 fsettop:
     lda #$07        ; move the y plotting position down
     sec             ; based on the 2nd (height) byte
     sbc ftheight
     clc
-    adc tmpy
-    sta tmpy
+    adc vdc_ty
+    sta vdc_ty
 
 faddbase:           ; move the y plotting position down
     clc             ; based on 3rd (baseline) byte
-    lda tmpy
+    lda vdc_ty
     adc fbase
-    sta tmpy
+    sta vdc_ty
 
 ftestbytes:
     jsr ftestbits
@@ -700,7 +703,7 @@ fnextbyte:
     lda ftheight
     cmp #$ff
     beq fdone
-    inc tmpy        ; move down to next scanline
+    inc vdc_ty      ; move down to next scanline
     lda fwidth      ; reset the width counter
     sta ftwidth
     jmp ftestbytes
@@ -714,12 +717,20 @@ ftestbits:
     and fbit        ; test if bit x (fbit) is set
     cmp fbit
     bne fnext       ; if not, skip ahead
-    ldy tmpy        ; if so plot the pixel
-    lda tmpxl 
-    ldx tmpxh
+
+    ldy vdc_ty      ; if so plot the pixel
+    lda vdc_txlo
+    ldx vdc_txhi
     jsr plotpixel
+
 fnext:
-    inc tmpxl       ; increase the x pos of the pixel location (on or off)
+    lda vdc_txlo    ; increase the x pos of the pixel location (on or off)
+    cmp #$ff
+    bne fincx
+    inc vdc_txhi
+fincx:
+    inc vdc_txlo
+
     lda fbit        ; check if we have tested the final bit of the byte (row)
     cmp #$01
     beq freset      ; if so, reset our variables to prepare for the next row data
@@ -728,8 +739,10 @@ fnext:
 freset:
     lda #$80        ; reset our bit comparer - set bit 7
     sta fbit
-    lda otmpxl      ; reset the X pixel plotting vakue for next row
-    sta tmpxl
+    lda vdc_xlo     ; reset the X (lo) pixel plotting value for next row
+    sta vdc_txlo
+    lda vdc_xhi     ; reset the X (hi) pixel plotting value for next row
+    sta vdc_txhi
     inc fcharlo     ; move to next row byte
     rts             ; return back
 
@@ -739,7 +752,7 @@ fcalcchar:
     sta fcharlo
     lda #>font
     sta fcharhi
-    lda fchar       ; get the normalized character
+    lda font_char   ; get the normalized character
     sta fctr        ; copy to a count-down counter
 fok: 
     lda fctr        ; load the count-down counter
@@ -762,22 +775,21 @@ fcalcdone:
 fcharlo = $26
 fcharhi = $27
 
-vdc_xlo     .byte $00
-vdc_xhi     .byte $00
-vdc_y       .byte $00
+vdc_xlo     .byte $00   ; std x lo
+vdc_xhi     .byte $00   ; std x hi
+vdc_y       .byte $00   ; std y
 
-fbit:       .byte $80
-otmpxl:     .byte $00
-otmpxh:     .byte $00
-otmpy:      .byte $00
-tmpxl:      .byte $00
-tmpxh:      .byte $00
-tmpy:       .byte $00
-ftwidth:    .byte $00
-fwidth:     .byte $00
-ftheight:   .byte $00
-fbase:      .byte $00
-fchar:      .byte $00
+vdc_txlo    .byte $00   ; tmp x lo
+vdc_txhi    .byte $00   ; tmp x hi
+vdc_ty      .byte $00   ; tmp y
+
+fbit:       .byte $80   ; bit to test
+
+ftwidth:    .byte $00   ; temp width (count down)
+fwidth:     .byte $00   ; current char width
+ftheight:   .byte $00   ; temp height (count down)
+fbase:      .byte $00   ; base byte
+font_char:  .byte $00   ; character to print
 fctr:       .byte $00
 
 

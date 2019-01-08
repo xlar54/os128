@@ -22,7 +22,8 @@ main:
 
     #SetPixel 120,120
 
-    #PutString 30,25,stuff
+    #PutString 500,25,stuff
+
 
     jsr keyboard_getkey
 
