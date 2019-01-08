@@ -10,6 +10,7 @@
 #BasicStart128 main
 
 main:
+    #FastMode
     #HiresOn
     #SetColors VDC_COLOR_BLACK, VDC_COLOR_LGREY 
     #MoveTo 0,0
@@ -36,5 +37,6 @@ stuff   .text "This is a test"
         .byte $00
 
 
+.include "vic-ii.asm"
 .include "vdc_gfx.asm"
 .include "keyboard.asm"
