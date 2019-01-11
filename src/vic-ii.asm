@@ -1,7 +1,12 @@
+;****************************************************************************
+; vic-ii                                                                    *
+;****************************************************************************
+
 ; The VIC chip in the C128 is configured exactly the same as on the C64. 
 ; The VIC chip registers are mapped onto $D000 in RAM. 
 
 VIC_BASE        = $d000
+VIC_COLOR_RAM   = $d800
 
 
 VIC_SPR0_X      = $00     ; Sprite x / y screen position registers
@@ -32,8 +37,8 @@ VIC_CTRL_1      = $11     ; Control register 1
 
 VIC_RASTER      = $12     ; Number of raster line at which a raster IRQ should be generated. 
                           ; 9th bit of raster line found in reg 17 ($12)
-VIC_STROBE_X    = $13     ; X-portion of the screen position at which the beam was found when a strobe was generated
-VIC_STROBE_Y    = $14     ; Y-portion of the screen position at which the beam was found when a strobe was generated
+VIC_LTPEN_X     = $13     ; X-portion of the screen position at which the beam was found when a strobe was generated (light pen)
+VIC_LTPEN_Y     = $14     ; Y-portion of the screen position at which the beam was found when a strobe was generated (light pen)
 
 VIC_SPR_ENBL    = $15     ; Sprite enable (bit 7= sprite 7, bit 6 = sprite 6 etc)
 
@@ -80,10 +85,10 @@ VIC_SPBK_COL    = $1f     ; Sprite/background collision
 
 VIC_BORDER_COL  = $20     ; Exterior color(border color) The border color is set in this register (0-15).
 
-VIC_BK_COL0     = $21     ; Background color registers 0-3 
-VIC_BK_COL1     = $22     ; Background color register 0 determines the background color in
-VIC_BK_COL2     = $23     ; the "normal" text mode. If the multi-color mode is enabled, it 
-VIC_BK_COL3     = $24     ; accesses registers 1-3
+VIC_BG_COL0     = $21     ; Background color registers 0-3 
+VIC_BG_COL1     = $22     ; Background color register 0 determines the background color in
+VIC_BG_COL2     = $23     ; the "normal" text mode. If the multi-color mode is enabled, it 
+VIC_BG_COL3     = $24     ; accesses registers 1-3
 
 VIC_SPR_MCOL0   = $25     ; Spritemulti-colorcolor0/1 
 VIC_SPR_MCOL1   = $26     ; Sprites which are represented in multi-color can assume the back
@@ -103,13 +108,31 @@ VIC_KYBRD_CTRL  = $2f     ; Keyboard control register
                           ; Bits 0 to 3 are responsible for this.
                           ; Bits 4-7 are unused and are always 1.
 
-VIC_SPEED       = $30     ; 2MHz bit
+VIC_CLOCK       = $30     ; 2MHz bit
                           ; Bit 0 of this register determines whether the computer operates at 2MHz or 1MHz.
                           ; If the bit is set, all accesses from the VIC-II chip to the memory
                           ; are halted, except for refreshing the dynamic RAM. Bits 1-7 are unused. 
 
+; *******************************************************************************************************************
+; Color values
+; *******************************************************************************************************************
 
-
+VIC_COLOR_BLACK   = $00
+VIC_COLOR_WHITE   = $01
+VIC_COLOR_RED     = $02
+VIC_COLOR_CYAN    = $03
+VIC_COLOR_PURPLE  = $04
+VIC_COLOR_GREEN   = $05
+VIC_COLOR_BLUE    = $06
+VIC_COLOR_YELLOW  = $07
+VIC_COLOR_ORANGE  = $08
+VIC_COLOR_BROWN   = $09
+VIC_COLOR_LRED    = $0A
+VIC_COLOR_DGREY   = $0B
+VIC_COLOR_MGREY   = $0C
+VIC_COLOR_LGREEN  = $0D
+VIC_COLOR_LBLUE   = $0E
+VIC_COLOR_LGREY   = $0F
 
 ; By default, the VIC chip 
 ; uses the same 16K area as the C64 ($0000 to $3FFF) and the screen and
@@ -178,10 +201,10 @@ SetVICRAMBank .macro value
 
 FastMode .macro
   lda #$01
-  sta VIC_BASE + VIC_SPEED
+  sta VIC_BASE + VIC_CLOCK
 .endm
 
 SlowMode .macro
   lda #$00
-  sta VIC_BASE + VIC_SPEED
+  sta VIC_BASE + VIC_CLOCK
 .endm

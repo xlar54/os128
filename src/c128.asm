@@ -1,3 +1,16 @@
+;****************************************************************************
+; c128 common                                                               *
+;****************************************************************************
+
+SCREEN_SELECT               = $d7       ; 0 = 40 COL / 128 = 80 COL
+IRQVEC                      = $0314
+
+C128_CASSETTE_BUFFER        = $0b00     ; 0b00 - 0bff
+C128_RS232_INPUT_BUFFER     = $0c00     ; 0c00 - 0cff
+C128_RS232_OUTPUT_BUFFER    = $0d00     ; 0d00 - 0dff
+C128_SPRITE_DEFS            = $0e00     ; 0e00 - 0fff
+
+
 
 ; Creates a basic loader for the machine language program
 ; <address> must be higher than $1c0e or just use $1c0e

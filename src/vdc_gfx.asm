@@ -1,58 +1,64 @@
 ;****************************************************************************
-; "HIRES80.BIN" hires line plotting package for the Commodore 128 80-col   *
-;*  screen.                                                                  *
-;*                                                                           *
-;*  This package contains a couple of irregularities that I discovered       *
-;*  while I was commenting it.  I left them in rather than start all over,   *
-;*  since this package was written with a monitor rather than an assembler.  *
-;*****************************************************************************
-; http://www.ffd2.com/fridge/chacking/c=hacking1.txt
-;*****************************************************************************
-;*  package entry points                                                     *
-;*****************************************************************************
+; vdc                                                                       *
+;****************************************************************************
 
 VDC_ADDR_REG        = $D600
 VDC_DATA_REG        = $D601
 
-VDC_HZ_TTL          = $00;    total # chars per line, including beam return 
-VDC_HZ_DSP          = $01;    actual chars per line
-VDC_HZ_SYNC_POS     = $02;    if reduced, left border moves right.  if increased left border moves left
-VDC_SYNC_WIDTH      = $03
-VDC_VERT_TTL        = $04;    total lines, including beam return
-VDC_VERT_TTL_ADJ    = $05;
-VDC_VERT_DSP        = $06;    total lines displayed
-VDC_VERT_SYNC_POS   = $07;    if increased, the screen moves up.the screen moves down when decreased
-VDC_INTLC_MOD       = $08;    interlace modes
-VDC_CHAR_TTL_VERT   = $09
-VDC_CRSR_MODE       = $0A
-VDC_CRSR_END        = $0B
-VDC_DSP_HI          = $0C
-VDC_DSP_LO          = $0D
-VDC_CRSR_POS_HI     = $0E
-VDC_CRSR_POS_LO     = $0F
-VDC_LGHT_PEN_VERT   = $10
-VDC_LGHT_PEN_HZ     = $11
-VDC_DATA_HI         = $12
-VDC_DATA_LO         = $13
-VDC_ATTRIB_HI       = $14
-VDC_ATTRIB_LO       = $15
-VDC_CHAR_TTL_DSP    = $16
-VDC_CHAR_TTL        = $17
-VDC_VSCROLL         = $18
-VDC_HSCROLL         = $19
-VDC_COLORS          = $1A
-VDC_ADDR_INC_RW     = $1B
-VDC_CSET            = $1C
-VDC_UNDRLN_SCAN     = $1D
-VDC_COUNT           = $1E
-VDC_DATA            = $1F
-VDC_BLK_START_HI    = $20
-VDC_BLK_START_LO    = $21
-VDC_DSP_ENBL_BEGN   = $22
-VDC_DSP_ENBL_END    = $23
-VDC_DRAM_REFRESH    = $24
+VDC_HZ_TTL          = $00;      Total number of horizontal character positions 
+VDC_HZ_DSP          = $01;      Number of visible horizontal character positions 
+VDC_HZ_SYNC_POS     = $02;      Horizontal sync position - if reduced, left border moves right.  if increased left border moves left
+VDC_SYNC_WIDTH      = $03;      Horizontal and vertical sync width
+VDC_VERT_TTL        = $04;      Total number of screen rows 
+VDC_VERT_TTL_ADJ    = $05;      Vertical fine adjustment
+VDC_VERT_DSP        = $06;      Number of visible screen rows
+VDC_VERT_SYNC_POS   = $07;      Vertical sync position - if increased, the screen moves up.the screen moves down when decreased
+VDC_INTLC_MOD       = $08;      Interlace mode control register 
+VDC_CHAR_TTL_VERT   = $09;      Number of scan lines per character 
+VDC_CRSR_MODE       = $0A;      Cursor mode control
+VDC_CRSR_END        = $0B;      Ending scan line for cursor 
+VDC_DSP_HI          = $0C;      Screen memory starting address (high byte)
+VDC_DSP_LO          = $0D;      Screen memory starting address (low byte) 
+VDC_CRSR_POS_HI     = $0E;      Cursor position address (high byte)
+VDC_CRSR_POS_LO     = $0F;      Cursor position address (low byte) 
+VDC_LGHT_PEN_VERT   = $10;      Light pen vertical position 
+VDC_LGHT_PEN_HZ     = $11;      Light pen horizontal position 
+VDC_DATA_HI         = $12;      Current memory address (high byte) 
+VDC_DATA_LO         = $13;      Current memory address (low byte) 
+VDC_ATTRIB_HI       = $14;      Attribute memory starting address (high byte)
+VDC_ATTRIB_LO       = $15;      Attribute memory starting address (low byte)
+VDC_CHAR_TTL_DSP    = $16;      Character horizontal size control register
+VDC_CHAR_TTL        = $17;      Character vertical size control register 
+VDC_VSCROLL         = $18;      Vertical smooth scrolling and control register
+VDC_HSCROLL         = $19;      Horizontal smooth scrolling and control register
+VDC_COLORS          = $1A;      Foreground/background color register 
+VDC_ADDR_INC_RW     = $1B;      Address increment per row
+VDC_CSET            = $1C;      Character set address and memory type register
+VDC_UNDRLN_SCAN     = $1D;      Underline scan-line-position register 
+VDC_COUNT           = $1E;      Number of bytes for block write or copy
+VDC_DATA            = $1F;      Memory read/write register 
+VDC_BLK_START_HI    = $20;      Block copy source address (high byte)
+VDC_BLK_START_LO    = $21;      Block copy source address (low byte)
+VDC_DSP_ENBL_BEGN   = $22;      Beginning position for horizontal blanking 
+VDC_DSP_ENBL_END    = $23;      Ending position for horizontal blanking
+VDC_DRAM_REFRESH    = $24;      Number of memory refresh cycles per scan line 
+
+; default vdc ram layout
+VDC_SCREEN_START    = $0000
+VDC_ATTRIB_START    = $0800     ; 7 - Character set (0 = upper / gfx, 1 = upper / lower)
+                                ; 6 - Reverse video (0 = normal, 1 = reverse)
+                                ; 5 - Underline (0 = off, 1= on)
+                                ; 4 - Blink (0 = off, 1 = on)
+                                ; 3 - Red
+                                ; 2 - Green
+                                ; 1 - Blue
+                                ; 0 - Intensity
+VDC_UNUSED_START    = $1000
+VDC_UCASE_GFX_CHAR  = $2000
+VDC_LCASE_UCASE_CHAR= $3000
 
 
+; vdc color values
 VDC_COLOR_BLACK     = $00
 VDC_COLOR_GREY      = $01
 VDC_COLOR_BLUE      = $02
@@ -69,6 +75,13 @@ VDC_COLOR_ORANGE    = $0C
 VDC_COLOR_YELLOW    = $0D
 VDC_COLOR_LGREY     = $0E
 VDC_COLOR_WHITE     = $0F
+
+; cursor modes (register 10)
+VDC_CURSOR_MODE_NON_BLINK       = $00
+VDC_CURSOR_MODE_CURSOR_OFF      = $20
+VDC_CURSOR_MODE_SLOW_BLINK      = $40
+VDC_CURSOR_MODE_FAST_BLINK      = $60
+
 
 setbank   = $ff00
 init80    = $ce0c
@@ -164,6 +177,30 @@ done:
     pla
 .endm
 
+
+SetCursorMode .macro mode
+    ldx #VDC_CRSR_MODE
+    lda #\mode
+    jsr writereg
+.endm
+
+SetInterlaceOn .macro
+    ldx #VDC_INTLC_MOD
+    lda #$03
+    jsr writereg
+    ldx #VDC_VERT_TTL
+    lda #$40
+    jsr writereg
+    ldx #VDC_VERT_DSP
+    lda #$32 
+    jsr writereg
+    ldx #VDC_VERT_SYNC_POS
+    lda #$3A
+    jsr writereg
+    ldx #VDC_HZ_TTL
+    lda #$80
+    jsr writereg
+.endm
 
 ;*****************************************************************************
 ;*  write VDC register

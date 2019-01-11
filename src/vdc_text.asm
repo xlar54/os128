@@ -41,6 +41,17 @@ VDC_DSP_ENBL_BEGN   = 34
 VDC_DSP_ENBL_END    = 35
 VDC_DRAM_REFRESH    = 36
 
+VDC_CURSOR_MODE_NON_BLINK       = $00
+VDC_CURSOR_MODE_CURSOR_OFF      = $01
+VDC_CURSOR_MODE_SLOW_BLINK      = $02
+VDC_CURSOR_MODE_FAST_BLINK      = $03
+
+SetCursorMode .macro mode
+        ldx #VDC_CRSR_MODE
+        lda #\mode
+        #WriteVDC
+.endm
+
 ; The following procedures must be used to read/write from the VDC RAM:
 ;
 ; put the required register # in the address register;
@@ -337,28 +348,28 @@ L1:     sta     BITMASK
 ; Must set an error code: NO
 ;
 
-SETPIXEL:
-        jsr     CALC            ; Calculate coordinates
-
-        stx     TEMP
-        lda     ADDR
-        ldy     ADDR+1
-        jsr     VDCSetSourceAddr
-        jsr     VDCReadByte
-        ldx     TEMP
-
-        sta     TEMP
-        eor     BITMASK
-        and     BITTAB,X
-        eor     TEMP
-        pha
-        lda     ADDR
-        ldy     ADDR+1
-        jsr     VDCSetSourceAddr
-        pla
-        jsr     VDCWriteByte
-
-L9:    rts
+;SETPIXEL:
+;        jsr     CALC            ; Calculate coordinates
+;
+;        stx     TEMP
+;        lda     ADDR
+;        ldy     ADDR+1
+;        jsr     VDCSetSourceAddr
+;        jsr     VDCReadByte
+;        ldx     TEMP
+;
+;        sta     TEMP
+;        eor     BITMASK
+;        and     BITTAB,X
+;        eor     TEMP
+;        pha
+;        lda     ADDR
+;        ldy     ADDR+1
+;        jsr     VDCSetSourceAddr
+;        pla
+;        jsr     VDCWriteByte
+;
+;L9:    rts
 
 ; ------------------------------------------------------------------------
 ; Calculate all variables to plot the pixel at X1/Y1.
@@ -366,52 +377,52 @@ L9:    rts
 ;< X1,Y1 - pixel
 ;> ADDR - address of card
 ;> X - bit number (X1 & 7)
-CALC:
-        lda     Y1+1
-        sta     ADDR+1
-        lda     Y1
-        asl
-        rol     ADDR+1
-        asl
-        rol     ADDR+1          ; Y*4
-        clc
-        adc     Y1
-        sta     ADDR
-        lda     Y1+1
-        adc     ADDR+1
-        sta     ADDR+1          ; Y*4+Y=Y*5
-        lda     ADDR
-        asl
-        rol     ADDR+1
-        asl
-        rol     ADDR+1
-        asl
-        rol     ADDR+1
-        asl
-        rol     ADDR+1
-        sta     ADDR            ; Y*5*16=Y*80
-        lda     X1+1
-        sta     TEMP
-        lda     X1
-        lsr     TEMP
-        ror
-        lsr     TEMP
-        ror
-        lsr     TEMP
-        ror
-        clc
-        adc     ADDR
-        sta     ADDR
-        lda     ADDR+1          ; ADDR = Y*80+x/8
-        adc     TEMP
-        sta     ADDR+1
-        lda     ADDR+1
-        adc     SCRBASE
-        sta     ADDR+1
-        lda     X1
-        and     #7
-        tax
-        rts
+;CALC:
+;        lda     Y1+1
+;        sta     ADDR+1
+;        lda     Y1
+;        asl
+;        rol     ADDR+1
+;        asl
+;        rol     ADDR+1          ; Y*4
+;        clc
+;        adc     Y1
+;        sta     ADDR
+;        lda     Y1+1
+;        adc     ADDR+1
+;        sta     ADDR+1          ; Y*4+Y=Y*5
+;        lda     ADDR
+;        asl
+;        rol     ADDR+1
+;        asl
+;        rol     ADDR+1
+;        asl
+;        rol     ADDR+1
+;        asl
+;        rol     ADDR+1
+;        sta     ADDR            ; Y*5*16=Y*80
+;        lda     X1+1
+;        sta     TEMP
+;        lda     X1
+;        lsr     TEMP
+;        ror
+;        lsr     TEMP
+;        ror
+;        lsr     TEMP
+;        ror
+;        clc
+;       adc     ADDR
+;        sta     ADDR
+;        lda     ADDR+1          ; ADDR = Y*80+x/8
+;        adc     TEMP
+;        sta     ADDR+1
+;        lda     ADDR+1
+ ;       adc     SCRBASE
+ ;       sta     ADDR+1
+ ;       lda     X1
+ ;       and     #7
+ ;       tax
+ ;       rts
 
 
 ; Keep-80 - Transactor Magazine

@@ -30,7 +30,12 @@ main:
 
     #SetColors VDC_COLOR_LGREY, VDC_COLOR_BLACK  
     #HiresOff
-    
+
+    #SetCursorMode VDC_CURSOR_MODE_NON_BLINK
+    #SetInterlaceOn
+    lda #$49
+    jsr $ffd2
+    jsr keyboard_getkey
     rts
 
 stuff   .text "This is a test"
