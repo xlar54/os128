@@ -7,6 +7,7 @@
 .include "c128.asm"
 .include "mmu.asm"
 
+
 #BasicStart128 main
 
 main:
@@ -31,17 +32,43 @@ main:
     #SetColors VDC_COLOR_LGREY, VDC_COLOR_BLACK  
     #HiresOff
 
-    #SetCursorMode VDC_CURSOR_MODE_NON_BLINK
-    #SetInterlaceOn
+    ;#SetCursorMode VDC_CURSOR_MODE_NON_BLINK
+    ;#SetInterlaceOn
     lda #$49
     jsr $ffd2
+
+    #SetVolume 15
+    lda #10
+    sta SID_BASE + SID_V1_SUSTAIN_RELEASE
+
+    #SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #PlayNote 1, 4, 0
+
+
+    #SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #PlayNote 1, 4, 4
+    ;#PlayNote 1, 4, 8
+    ;#PlayNote 1, 4, 10
     jsr keyboard_getkey
+    ;#StopNote 1
+
+    #SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #PlayNote 1, 4, 14
+    ;#PlayNote 1, 4, 18
+    ;#PlayNote 1, 4, 22
+
+    jsr keyboard_getkey
+    #StopNote 1
+
+    
+
     rts
 
 stuff   .text "This is a test"
         .byte $00
 
 
+.include "sid.asm"
 .include "vic-ii.asm"
 .include "vdc_gfx.asm"
 .include "keyboard.asm"

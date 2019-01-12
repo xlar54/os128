@@ -105,8 +105,22 @@ SID_ENV_GEN_V3          = $1c       ; Envelope generator for voice 3.
                                     ; This register returns the current condition of the relative volume of voice 3.
                                     ; This can be used to vary the frequency or filter parameters during the tone creation, for example
 
+SID_WAVEFORM_TRIANGLE   = %00010000
+SID_WAVEFORM_SAWTOOTH   = %00100000
+SID_WAVEFORM_PULSE      = %01000000
+SID_WAVEFORM_NOISE      = %10000000
+
+SID_NOTE_TBL:
+.byte 'c', 0
+.byte 'd', 4
+.byte 'e', 8
+.byte 'f', 10
+.byte 'g', 14
+.byte 'a', 18
+.byte 'b', 22
 
 ; notes
+SID_NOTES:
 ; Octave 0
 .byte $18, $02  ; C
 .byte $38, $02  ; C/D
@@ -198,3 +212,69 @@ SID_ENV_GEN_V3          = $1c       ; Envelope generator for voice 3.
 .byte $8f, $e1  ; A
 .byte $f9, $ee  ; A/B
 .byte $2f, $fd  ; B
+
+SetVolume .macro level
+    lda #\level
+    sta SID_BASE + SID_VOL_AND_FILTER
+.endm
+
+SetWaveform .macro voice, waveform
+    lda #\waveform
+.if \voice == 1
+    sta SID_BASE + SID_V1_CTRL
+.elsif \voice == 2
+    sta SID_BASE + SID_V2_CTRL
+.elsif \voice == 3
+    sta SID_BASE + SID_V3_CTRL
+.fi
+.endm
+
+PlayNote .macro voice, octave, note
+
+.if \voice == 1
+    lda SID_BASE + SID_V1_CTRL
+    ora #%00000001
+    sta SID_BASE + SID_V1_CTRL
+.elsif \voice == 2
+    lda SID_BASE + SID_V2_CTRL
+    ora #%00000001
+    sta SID_BASE + SID_V2_CTRL
+.elsif \voice == 3
+    lda SID_BASE + SID_V3_CTRL
+    ora #%00000001
+    sta SID_BASE + SID_V3_CTRL
+.fi
+
+    lda SID_NOTES + (24 * \octave) + \note
+
+.if \voice == 1
+    sta SID_BASE + SID_V1_OSC_FREQ_LB
+.elsif \voice == 2
+    sta SID_BASE + SID_V2_OSC_FREQ_LB
+.elsif \voice == 3
+    sta SID_BASE + SID_V3_OSC_FREQ_LB
+.fi 
+
+    lda SID_NOTES + (24 * \octave) + \note + 1
+
+.if \voice == 1
+    sta SID_BASE + SID_V1_OSC_FREQ_UB
+.elsif \voice == 2
+    sta SID_BASE + SID_V2_OSC_FREQ_UB
+.elsif \voice == 3
+    sta SID_BASE + SID_V3_OSC_FREQ_UB
+.fi
+
+.endm
+
+StopNote .macro voice
+    lda #$00
+.if \voice == 1
+    sta SID_BASE + SID_V1_CTRL
+.elsif \voice == 2
+    sta SID_BASE + SID_V2_CTRL
+.elsif \voice == 3
+    sta SID_BASE + SID_V3_CTRL
+.fi
+
+.endm
