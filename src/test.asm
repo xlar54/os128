@@ -37,28 +37,33 @@ main:
     lda #$49
     jsr $ffd2
 
-    #SetVolume 15
-    lda #10
+    #Sid_Init
+    #Sid_SetVolume 15
+
+    lda #12
+    sta SID_BASE + SID_V1_ATTACK_DECAY
+
+    lda #4
     sta SID_BASE + SID_V1_SUSTAIN_RELEASE
 
-    #SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #PlayNote 1, 4, 0
+    ;#Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    ;#Sid_PlayNote 1, 4, 0
 
 
-    #SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #PlayNote 1, 4, 4
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 3, 0
     ;#PlayNote 1, 4, 8
     ;#PlayNote 1, 4, 10
     jsr keyboard_getkey
     ;#StopNote 1
 
-    #SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #PlayNote 1, 4, 14
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 4, 14
     ;#PlayNote 1, 4, 18
     ;#PlayNote 1, 4, 22
 
     jsr keyboard_getkey
-    #StopNote 1
+    #Sid_StopNote 1
 
     
 

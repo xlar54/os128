@@ -213,12 +213,22 @@ SID_NOTES:
 .byte $f9, $ee  ; A/B
 .byte $2f, $fd  ; B
 
-SetVolume .macro level
+Sid_Init .macro
+    ldy #$00
+    lda #$00
+again:
+    sta SID_BASE, y
+    iny
+    cpy #$19
+    bne again
+.endm
+
+Sid_SetVolume .macro level
     lda #\level
     sta SID_BASE + SID_VOL_AND_FILTER
 .endm
 
-SetWaveform .macro voice, waveform
+Sid_SetWaveform .macro voice, waveform
     lda #\waveform
 .if \voice == 1
     sta SID_BASE + SID_V1_CTRL
@@ -229,7 +239,7 @@ SetWaveform .macro voice, waveform
 .fi
 .endm
 
-PlayNote .macro voice, octave, note
+Sid_PlayNote .macro voice, octave, note
 
 .if \voice == 1
     lda SID_BASE + SID_V1_CTRL
@@ -267,7 +277,7 @@ PlayNote .macro voice, octave, note
 
 .endm
 
-StopNote .macro voice
+Sid_StopNote .macro voice
     lda #$00
 .if \voice == 1
     sta SID_BASE + SID_V1_CTRL
