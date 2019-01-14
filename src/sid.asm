@@ -105,19 +105,23 @@ SID_ENV_GEN_V3          = $1c       ; Envelope generator for voice 3.
                                     ; This register returns the current condition of the relative volume of voice 3.
                                     ; This can be used to vary the frequency or filter parameters during the tone creation, for example
 
-SID_WAVEFORM_TRIANGLE   = %00010000
-SID_WAVEFORM_SAWTOOTH   = %00100000
-SID_WAVEFORM_PULSE      = %01000000
-SID_WAVEFORM_NOISE      = %10000000
+SID_WAVEFORM_TRIANGLE   = %00010001
+SID_WAVEFORM_SAWTOOTH   = %00100001
+SID_WAVEFORM_PULSE      = %01000001
+SID_WAVEFORM_NOISE      = %10000001
 
-SID_NOTE_TBL:
-.byte 'c', 0
-.byte 'd', 4
-.byte 'e', 8
-.byte 'f', 10
-.byte 'g', 14
-.byte 'a', 18
-.byte 'b', 22
+SID_C   = 0;
+SID_Csh = 2;
+SID_D   = 4;
+SID_Dsh = 6;
+SID_E   = 8;
+SID_F   = 10;
+SID_Fsh = 12;
+SID_G   = 14;
+SID_Gsh = 16;
+SID_A   = 18;
+SID_Ash = 20;
+SID_B   = 22;
 
 ; notes
 SID_NOTES:
@@ -241,53 +245,28 @@ Sid_SetVolume .macro level
     sta SID_BASE + SID_VOL_AND_FILTER
 .endm
 
-Sid_SetWaveform .macro voice, waveform
+
+Sid_PlayNote .macro voice, octave, note, waveform
+
+    #Sid_StopNote \voice
+    
+    ldx SID_NOTES + 24 * \octave + \note
+    ldy SID_NOTES + 24 * \octave + \note + 1
     lda #\waveform
+
 .if \voice == 1
+    stx SID_BASE + SID_V1_OSC_FREQ_LB
+    sty SID_BASE + SID_V1_OSC_FREQ_UB
     sta SID_BASE + SID_V1_CTRL
 .elsif \voice == 2
+    stx SID_BASE + SID_V2_OSC_FREQ_LB
+    sty SID_BASE + SID_V2_OSC_FREQ_UB
     sta SID_BASE + SID_V2_CTRL
 .elsif \voice == 3
+    stx SID_BASE + SID_V3_OSC_FREQ_LB
+    sty SID_BASE + SID_V3_OSC_FREQ_UB
     sta SID_BASE + SID_V3_CTRL
-.fi
-.endm
-
-Sid_PlayNote .macro voice, octave, note
-
-.if \voice == 1
-    lda SID_BASE + SID_V1_CTRL
-    ora #%00000001
-    sta SID_BASE + SID_V1_CTRL
-.elsif \voice == 2
-    lda SID_BASE + SID_V2_CTRL
-    ora #%00000001
-    sta SID_BASE + SID_V2_CTRL
-.elsif \voice == 3
-    lda SID_BASE + SID_V3_CTRL
-    ora #%00000001
-    sta SID_BASE + SID_V3_CTRL
-.fi
-
-    lda SID_NOTES + (24 * \octave) + \note
-
-.if \voice == 1
-    sta SID_BASE + SID_V1_OSC_FREQ_LB
-.elsif \voice == 2
-    sta SID_BASE + SID_V2_OSC_FREQ_LB
-.elsif \voice == 3
-    sta SID_BASE + SID_V3_OSC_FREQ_LB
 .fi 
-
-    lda SID_NOTES + (24 * \octave) + \note + 1
-
-.if \voice == 1
-    sta SID_BASE + SID_V1_OSC_FREQ_UB
-.elsif \voice == 2
-    sta SID_BASE + SID_V2_OSC_FREQ_UB
-.elsif \voice == 3
-    sta SID_BASE + SID_V3_OSC_FREQ_UB
-.fi
-
 .endm
 
 Sid_StopNote .macro voice

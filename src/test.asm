@@ -11,6 +11,7 @@
 #BasicStart128 main
 
 main:
+
     #FastMode
     #HiresOn
     #SetColors VDC_COLOR_BLACK, VDC_COLOR_LGREY 
@@ -25,17 +26,12 @@ main:
     #SetPixel 120,120
 
     #PutString 500,25,stuff
-
-
     jsr keyboard_getkey
-
-    #SetColors VDC_COLOR_LGREY, VDC_COLOR_BLACK  
-    #HiresOff
 
     ;#SetCursorMode VDC_CURSOR_MODE_NON_BLINK
     ;#SetInterlaceOn
-    lda #$49
-    jsr $ffd2
+    ;lda #$49
+    ;jsr $ffd2
 
     #Sid_Init
     #Sid_SetVolume 15
@@ -46,45 +42,39 @@ main:
     lda #4
     sta SID_BASE + SID_V1_SUSTAIN_RELEASE
 
-    ;#Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    ;#Sid_PlayNote 1, 4, 0
-
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 0, 0
+    #Sid_PlayNote 1, 4, SID_C, SID_WAVEFORM_TRIANGLE    ; voice 1, octave 4, note C, triangle waveform
 
     jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 1, 0
+    #Sid_PlayNote 1, 4, SID_D, SID_WAVEFORM_TRIANGLE
 
     jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 2, 0
+    #Sid_PlayNote 1, 4, SID_E, SID_WAVEFORM_TRIANGLE
 
     jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 3, 0
-    
-    jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 4, 0
+    #Sid_PlayNote 1, 4, SID_F, SID_WAVEFORM_TRIANGLE
 
     jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 5, 0
+    #Sid_PlayNote 1, 4, SID_G, SID_WAVEFORM_TRIANGLE
 
     jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 6, 0
+    #Sid_PlayNote 1, 4, SID_A, SID_WAVEFORM_TRIANGLE
 
     jsr keyboard_getkey
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 7, 0
+    #Sid_PlayNote 1, 4, SID_B, SID_WAVEFORM_TRIANGLE
+
+    jsr keyboard_getkey
+    #Sid_PlayNote 1, 5, SID_C, SID_WAVEFORM_TRIANGLE
+
+    jsr keyboard_getkey
+    #Sid_SetVolume 0
+
+    #SetColors VDC_COLOR_LGREY, VDC_COLOR_BLACK  
+    #HiresOff
 
     rts
 
-stuff   .text "This is a test"
+stuff   .text "Press keys to play music"
         .byte $00
-
 
 .include "sid.asm"
 .include "vic-ii.asm"
