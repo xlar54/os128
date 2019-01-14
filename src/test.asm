@@ -49,23 +49,36 @@ main:
     ;#Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
     ;#Sid_PlayNote 1, 4, 0
 
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 0, 0
 
+    jsr keyboard_getkey
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 1, 0
+
+    jsr keyboard_getkey
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 2, 0
+
+    jsr keyboard_getkey
     #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
     #Sid_PlayNote 1, 3, 0
-    ;#PlayNote 1, 4, 8
-    ;#PlayNote 1, 4, 10
-    jsr keyboard_getkey
-    ;#StopNote 1
-
-    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
-    #Sid_PlayNote 1, 4, 14
-    ;#PlayNote 1, 4, 18
-    ;#PlayNote 1, 4, 22
-
-    jsr keyboard_getkey
-    #Sid_StopNote 1
-
     
+    jsr keyboard_getkey
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 4, 0
+
+    jsr keyboard_getkey
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 5, 0
+
+    jsr keyboard_getkey
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 6, 0
+
+    jsr keyboard_getkey
+    #Sid_SetWaveform 1, SID_WAVEFORM_TRIANGLE
+    #Sid_PlayNote 1, 7, 0
 
     rts
 

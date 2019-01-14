@@ -10,7 +10,9 @@ keyboard_getkey:
     .block
     lda KEYNDX
     cmp #$00
-    beq keyboard_getkey
+    bne getit
+    jmp keyboard_getkey
+getit:
     lda KEYBUF
     sta lastkey
     lda #$00
